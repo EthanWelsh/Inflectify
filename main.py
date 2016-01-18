@@ -19,43 +19,46 @@ class Number:
                 16: 'Sixteen', 17: 'Seventeen', 18: 'Eighteen', 19: 'Nineteen'}[number]
 
     def decades(self, number):
+
+        if number < 20:
+            return self.small(number)
+
         ret = {20: 'Twenty', 30: 'Thirty', 40: 'Forty', 50: 'Fifty', 60: 'Sixty',
                70: 'Seventy', 80: 'Eighty', 90: 'Ninety'}[(number // 10) * 10]
-        if number % 10 > 0:
-            ret += '-' + self.small(number % 10)
+
+        remainder = number % 10
+
+        if remainder > 0:
+            ret += '-' + self.small(remainder)
         return ret
 
     def hundreds(self, number):
+
+        if number < 100:
+            return self.decades(number)
+
         ret = self.small(number//100) + '-' + 'Hundred'
 
-        if number % 100 >= 20:
+        if number % 100 > 0:
             ret += '-' + self.decades(number % 100)
-        elif number % 100 > 0:
-            ret += '-' + self.small(number % 100)
 
         return ret
 
     def thousands(self, number):
+
+        if number < 1000:
+            return self.hundreds(number)
+
         thousands = number // 1000
 
-        if thousands <= 19:
-            ret = self.small(thousands)
-        elif thousands <= 99:
-            ret = self.decades(thousands)
-        elif thousands <= 999:
+        if thousands > 0:
             ret = self.hundreds(thousands)
 
         ret += '-Thousand'
 
         remainder = number % 1000
 
-        if remainder == 0:
-            pass
-        elif remainder <= 19:
-            ret += '-' + self.small(remainder)
-        elif remainder <= 99:
-            ret += '-' + self.decades(remainder)
-        elif remainder <= 999:
+        if remainder > 0:
             ret += '-' + self.hundreds(remainder)
 
         return ret

@@ -6,7 +6,7 @@ class Number:
     def __str__(self):
         return self.trillions(self.number, self.ordinal)
 
-    def small(self, number, ordinal):
+    def small(self, number, ordinal=False):
 
         number_words = {1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six',
                         7: 'Seven', 8: 'Eight', 9: 'Nine', 10: 'Ten', 11: 'Eleven',
@@ -15,17 +15,17 @@ class Number:
 
         special_ordinals = {1: 'First', 2: 'Second', 3: 'Third', 5: 'Fifth', 8: 'Eighth', 9: 'Ninth'}
 
-        if self.ordinal:
+        if ordinal:
             return special_ordinals.get(number, number_words[number] + 'th')
         else:
             return number_words[number]
 
-    def decades(self, number, ordinal):
+    def decades(self, number, ordinal=False):
         if number < 20:
             return self.small(number, ordinal)
 
         decade_words = {20: 'Twenty', 30: 'Thirty', 40: 'Forty', 50: 'Fifty', 60: 'Sixty',
-               70: 'Seventy', 80: 'Eighty', 90: 'Ninety'}
+                        70: 'Seventy', 80: 'Eighty', 90: 'Ninety'}
         decade_number = (number // 10) * 10
 
         prefix = decade_words[decade_number]
@@ -36,33 +36,35 @@ class Number:
         elif ordinal:
             return prefix + 'th'
 
-    def hundreds(self, number, ordinal):
+    def hundreds(self, number, ordinal=False):
         if number < 100:
             return self.decades(number, ordinal)
 
         prefix = number // 100
         remainder = number % 100
 
+        ret = self.small(prefix) + ' Hundred'
+
         if remainder > 0:
-            return self.small(prefix) + ' ' + self.decades(number % 100, ordinal)
+            ret += ' ' + self.decades(remainder, ordinal)
         elif ordinal:
-            return self.small(prefix) + ' Hundredth'
-
-
-    def thousands(self, number, ordinal):
-        if number < 1000:
-            return self.hundreds(number, ordinal)
-
-        thousands = number // 1000
-        ret = self.hundreds(thousands) + ' Thousand'
-
-        remainder = number % 1000
-        if remainder > 0:
-            ret += ' ' + self.hundreds(remainder)
+            ret += 'th'
 
         return ret
 
-    def millions(self, number, ordinal):
+    def thousands(self, number, ordinal=False):
+        if number < 1000:
+            return self.hundreds(number, ordinal)
+
+        prefix = self.hundreds(number // 1000)
+        remainder = number % 1000
+
+        if remainder > 0:
+            return prefix + ' Thousand ' + self.hundreds(remainder, ordinal)
+        elif ordinal:
+            return prefix + ' Thousandth'
+
+    def millions(self, number, ordinal=False):
         if number < 1000000:
             return self.thousands(number, ordinal)
 
@@ -70,12 +72,15 @@ class Number:
         ret = self.hundreds(millions) + ' Million'
 
         remainder = number % 1000000
+
         if remainder > 0:
             ret += ' ' + self.thousands(remainder)
+        else:
+            ret += 'th'
 
         return ret
 
-    def billions(self, number, ordinal):
+    def billions(self, number, ordinal=False):
         if number < 1000000000:
             return self.millions(number, ordinal)
 
@@ -85,19 +90,23 @@ class Number:
         remainder = number % 1000000000
         if remainder > 0:
             ret += ' ' + self.millions(remainder)
+        else:
+            ret += 'th'
 
         return ret
 
-    def trillions(self, number, ordinal):
+    def trillions(self, number, ordinal=False):
         if number < 1000000000000:
             return self.billions(number, ordinal)
 
         trillions = number // 1000000000000
-        ret = self.hundreds(trillions) + ' Million'
+        ret = self.hundreds(trillions) + ' Trillion'
 
         remainder = number % 1000000000
         if remainder > 0:
             ret += ' ' + self.billions(remainder)
+        else:
+            ret += 'th'
 
         return ret
 
@@ -139,8 +148,16 @@ def main():
     print('29: ', str(Number(29, ordinal=True)))
     print('30: ', str(Number(30, ordinal=True)))
     print('31: ', str(Number(31, ordinal=True)))
-
-
+    print('100: ', str(Number(100, ordinal=False)))
+    print('131: ', str(Number(131, ordinal=True)))
+    print('999: ', str(Number(999, ordinal=True)))
+    print('1000: ', str(Number(1000, ordinal=True)))
+    print('10001: ', str(Number(10001, ordinal=True)))
+    print('100000: ', str(Number(100000, ordinal=True)))
+    print('1000000: ', str(Number(1000000, ordinal=True)))
+    print('10000000: ', str(Number(10000000, ordinal=True)))
+    print('100000000: ', str(Number(100000000, ordinal=True)))
+    print('1000000000: ', str(Number(1000000000000, ordinal=True)))
 
 
 if __name__ == '__main__':

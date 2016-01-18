@@ -8,12 +8,12 @@ class Number:
 
     def small(self, number, ordinal=False):
 
-        number_words = {1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six',
+        number_words = {0: 'Zero', 1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six',
                         7: 'Seven', 8: 'Eight', 9: 'Nine', 10: 'Ten', 11: 'Eleven',
                         12: 'Twelve', 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen',
                         16: 'Sixteen', 17: 'Seventeen', 18: 'Eighteen', 19: 'Nineteen'}
 
-        special_ordinals = {1: 'First', 2: 'Second', 3: 'Third', 5: 'Fifth', 8: 'Eighth', 9: 'Ninth'}
+        special_ordinals = {1: 'First', 2: 'Second', 3: 'Third', 5: 'Fifth', 8: 'Eighth', 9: 'Ninth', 12: 'Twelfth'}
 
         if ordinal:
             return special_ordinals.get(number, number_words[number] + 'th')
@@ -35,6 +35,8 @@ class Number:
             return prefix + ' ' + self.small(remainder, ordinal)
         elif ordinal:
             return prefix + 'th'
+        else:
+            return prefix
 
     def hundreds(self, number, ordinal=False):
         if number < 100:

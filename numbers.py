@@ -133,3 +133,20 @@ def number_string(number, ordinal=False, money=False):
             return '{dollars} Dollars'.format(dollars=integer)
         else:
             return integer
+
+
+def fractions(numerator, denominator):
+
+    num = number_string(numerator)
+    den = number_string(denominator, ordinal=True)
+
+    if int(numerator) > 1:
+        if int(denominator) == 2:
+            return '{} Halves'.format(num, den)
+        else:
+            return '{} {}s'.format(num, den)
+    else:
+        if int(denominator) == 2:
+            return '{} Half'.format(num)
+        else:
+            return '{} {}s'.format(num, den)

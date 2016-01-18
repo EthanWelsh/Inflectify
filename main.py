@@ -14,6 +14,7 @@ def main():
                 print(number_string(word), end=' ')
             else:
                 print(word, end=' ')
+        print()
 
 
 if __name__ == '__main__':

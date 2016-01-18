@@ -113,5 +113,23 @@ class Number:
         return ret
 
 
-def number_string(number, ordinal=False):
-    return str(Number(int(number), ordinal))
+def read_digits(number):
+    return ' '.join([number_string(digit) for digit in str(number)])
+
+
+def number_string(number, ordinal=False, money=False):
+    if '.' in number:
+        integer, decimal = str(number).split('.')
+
+        if money:
+
+            return '{dollars} Dollars and {cents} Cents'.format(dollars=number_string(integer), cents=number_string(decimal))
+        else:
+            return '{integer} Point {decimal}'.format(integer=number_string(integer), decimal=read_digits(decimal))
+    else:
+        integer = str(Number(int(number), ordinal))
+
+        if money:
+            return '{dollars} Dollars'.format(dollars=integer)
+        else:
+            return integer

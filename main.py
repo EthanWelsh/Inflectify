@@ -49,8 +49,10 @@ def main():
             sentence = fraction(Sentence(sentence))
         if contains_percent(sentence):
             sentence = percent(sentence)
-        # if contains_number(sentence):
-        #    sentence = number(sentence)
+
+        sentence = year(sentence)
+        if contains_number(sentence):
+            sentence = number(sentence)
 
         print(' '.join(sentence))
 
@@ -98,11 +100,6 @@ def contains_percent(sentence):
             match_indexes += [index]
 
     return match_indexes
-
-
-def year(setence):
-    year_regex = re.compile('[12]\d{3}')
-    pass
 
 
 def get_date_string(date_info):
@@ -166,6 +163,21 @@ def abbreviations(sentence):
     for word in sentence:
         word = str.lower(word)
         new_sentence += [abbrev.get(word, word)]
+
+    return new_sentence
+
+
+def year(sentence):
+    year_regex = re.compile('^(1[5-9]\d\d)|(20\d\d)$')
+
+    new_sentence = []
+
+    for word in sentence:
+        if year_regex.match(word):
+            year = number_string(word[:2]) + ' ' + number_string(word[2:])
+            new_sentence += [year]
+        else:
+            new_sentence += [word]
 
     return new_sentence
 

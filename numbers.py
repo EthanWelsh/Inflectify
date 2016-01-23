@@ -66,6 +66,8 @@ class Number:
         elif ordinal:
             return prefix + ' Thousandth'
 
+        return prefix + ' Thousand'
+
     def millions(self, number, ordinal=False):
         if number < 1000000:
             return self.thousands(number, ordinal)

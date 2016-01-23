@@ -1,5 +1,8 @@
-from numbers import number_string, fractions
 import re
+from datetime import datetime
+
+
+from numbers import number_string, fractions
 
 
 class Sentence():
@@ -36,12 +39,18 @@ def main():
         sentences = [Sentence([word for word in line.split()]) for line in sample_text]
 
     for sentence in sentences:
+
+        sentence = abbreviations(sentence)
+        sentence = date(sentence)
+
         if contains_money(sentence):
-            sentence = money(sentence)
+            sentence = money(Sentence(sentence))
         if contains_fraction(sentence):
-            sentence = fraction(sentence)
+            sentence = fraction(Sentence(sentence))
         if contains_percent(sentence):
             sentence = percent(sentence)
+
+        sentence = year(sentence)
         if contains_number(sentence):
             sentence = number(sentence)
 
@@ -93,8 +102,116 @@ def contains_percent(sentence):
     return match_indexes
 
 
+def get_date_string(date_info):
+    month = {1: 'January',
+             2: 'February',
+             3: 'March',
+             4: 'April',
+             5: 'May',
+             6: 'June',
+             7: 'July',
+             8: 'August',
+             9: 'September',
+             10: 'October',
+             11: 'November',
+             12: 'December'}
+
+    if date_info.day and date_info.month and date_info.year != 1900:
+        day = number_string(str(date_info.month), ordinal=True)
+        year = str(date_info.year)
+        year = number_string(year[:2]) + ' ' + number_string(year[2:])
+        return "{month} {day}, {year}".format(day=day, month=month[date_info.month], year=year)
+    elif date_info.day and date_info.month:
+        day = number_string(str(date_info.month), ordinal=True)
+        return "{month} {day}".format(day=day, month=month[date_info.month])
+    elif date_info.month and date_info.year != 1900:
+        year = str(date_info.year)
+        year = number_string(year[:2]) + ' ' + number_string(year[2:])
+        return "{month} {year}".format(year=year, month=month[date_info.month])
+
+
+def abbreviations(sentence):
+    abbrev = {
+        'jan.': 'January',
+        'feb.': 'February',
+        'mar.': 'March',
+        'apr.': 'April',
+        'may.': 'May',
+        'jun.': 'June',
+        'jul.': 'July',
+        'aug.': 'August',
+        'sep.': 'September',
+        'sept.': 'September',
+        'oct.': 'October',
+        'nov.': 'November',
+        'dec.': 'December',
+        'etc...': 'etcetera',
+        'u.s.': 'United States',
+        'u.s.a.': 'United States of America',
+        'u.k.': 'United Kingdom',
+        'mr.': 'Mister',
+        'mrs.': 'Miss',
+        'dr.': 'Doctor',
+        'gov.': 'Governor',
+        'sen.': 'Senator',
+        'inc.': 'incorporated',
+        'vs.': 'verse',
+        'jr.': 'junior',
+    }
+
+    new_sentence = []
+    for word in sentence:
+        word = str.lower(word)
+        new_sentence += [abbrev.get(word, word)]
+
+    return new_sentence
+
+
+def year(sentence):
+    year_regex = re.compile('^(1[5-9]\d\d)|(20\d\d)$')
+
+    new_sentence = []
+
+    for word in sentence:
+        if year_regex.match(word):
+            year = number_string(word[:2]) + ' ' + number_string(word[2:])
+            new_sentence += [year]
+        else:
+            new_sentence += [word]
+
+    return new_sentence
+
+
+def date(sentence):
+    month_names = '(?:january|february|march|april|may|june|july|august|september|october|november|december)'
+
+    date_formats = [
+        ('\d{1,2}\/\d{1,2}\/\d{4}', '%m/%d/%Y'),  # mm/dd/yyyy
+        ('\d{1,2}\/\d{1,2}\/\d{2}', '%m/%d/%y'),  # mm/dd/yy
+        ('{month_names}\s+\d{{1,2}}\s+\d{{4}}'.format(month_names=month_names), '%B %d %Y'),  # january 3 2015
+        ('{month_names}\s+\d{{4}}'.format(month_names=month_names), '%B %Y'),  # january 1980
+        ('{month_names}\s+\d{{1,2}}'.format(month_names=month_names), '%B %d'),  # january 3
+    ]
+
+    sentence_str = ' '.join(sentence)
+    sentence_str = sentence_str.lower()
+
+    # Remove Ordinals
+    ordinal_regex = re.compile('(?<=[0-9])(?:st|nd|rd|th)')
+    sentence_str = re.sub(ordinal_regex, '', sentence_str)
+
+    # Remove commas
+    sentence_str = sentence_str.replace(',', '')
+
+    for regex, pattern in date_formats:
+        for match in re.findall(regex, sentence_str):
+            date_tuple = datetime.strptime(match, pattern)
+            sentence_str = sentence_str.replace(match, get_date_string(date_tuple))
+
+    return sentence_str.split()
+
+
 def money(sentence):
-    monetary_amounts = {'thousand', 'million', 'billion', 'trillion'}
     indexes = contains_money(sentence)
 
     for index in indexes:
@@ -102,7 +219,7 @@ def money(sentence):
         first = sentence.adjacent_word(index, offset=1)
         second = sentence.adjacent_word(index, offset=2)
 
-        if second in monetary_amounts:
+        if 'illion' in second:
             sentence.insert(index, offset=2, word='Dollars')
             sentence.remove(index)
         else:
@@ -145,6 +262,7 @@ def number(sentence):
         sentence[index] = number_string(sentence[index])
 
     return sentence
+
 
 if __name__ == '__main__':
     main()

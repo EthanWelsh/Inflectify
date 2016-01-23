@@ -1,4 +1,5 @@
 import re
+from time import strptime
 
 from numbers import number_string, fractions
 
@@ -48,7 +49,6 @@ def main():
             sentence = percent(sentence)
         # if contains_number(sentence):
         #    sentence = number(sentence)
-
 
         print(' '.join(sentence))
 
@@ -118,12 +118,12 @@ def get_date_string(datetime):
              12: 'December'}
 
     if datetime.tm_mday and datetime.tm_mon and datetime.tm_year:
-        day = number_string(datetime.tm_mon, ordinal=True)
+        day = number_string(str(datetime.tm_mon), ordinal=True)
         year = str(datetime.tm_year)
         year = number_string(year[:2]) + ' ' + number_string(year[2:])
         return "{month} {day}, {year}".format(day=day, month=month[datetime.tm_mon], year=year)
     elif datetime.tm_mday and datetime.tm_mon:
-        day = number_string(datetime.tm_mon, ordinal=True)
+        day = number_string(str(datetime.tm_mon), ordinal=True)
         return "{month} {day}".format(day=day, month=month[datetime.tm_mon])
     elif datetime.tm_mon and datetime.tm_year:
         year = str(datetime.tm_year)
@@ -132,67 +132,35 @@ def get_date_string(datetime):
 
 
 def date(sentence):
-    regex_format_dict = {
-        '\d{1,2}\/\d{1,2}\/\d{2}': '%d/%m/%y',  # dd/mm/yy
-        '\d{1,2}\/\d{1,2}\/\d{4}': '%d/%m/%Y',  # dd/mm/yyyy
-        '(jan|feb|mar|apr|may|jun|jul|aug)\s+\d{1}': '',  # jan 3
-        '(jan|feb|mar|apr|may|jun|jul|aug)\s+\d{4}': '',  # jan 1980
-        '(jan|feb|mar|apr|may|jun|jul|aug)\s+\d{1,2}\s+\d{4}': '%b %d %y'  # jan 3 2015
-    }
-
-    numerical_date = re.compile('\d{1,2}[.-/]\d{1,2}[.-/](\d{4}|\d{2})')
-    written_date = re.compile(
-            '(jan(uary)?|feb(uary)?|mar(ch)?|apr(il)|may|jun(e)?|jul(y)?|aug(ust)?)\s\d+.?.?\s?(\d{2}|\d{4})?\s')
+    # @formatter:off
+    date_formats = [
+        ('\d{1,2}\/\d{1,2}\/\d{4}',                                                 '%d/%m/%Y'),    # dd/mm/yyyy
+        ('\d{1,2}\/\d{1,2}\/\d{2}',                                                 '%d/%m/%y'),    # dd/mm/yy
+        ('(?:january|february|march|april|may|june|july|august)\s+\d{1,2}\s+\d{4}', '%B %d %Y'),    # january 3 2015
+        ('(?:jan|feb|mar|apr|may|jun|jul|aug)\s+\d{1,2}\s+\d{4}',                   '%b %d %y'),    # jan 3 2015
+        ('(?:january|february|march|april|may|june|july|august)\s+\d{4}',           '%B %Y'),       # january 1980
+        ('(?:jan|feb|mar|apr|may|jun|jul|aug)\s+\d{4}',                             '%b %Y'),       # jan 1980
+        ('(?:january|february|march|april|may|june|july|august)\s+\d{1}',           '%B %d'),       # january 3
+        ('(?:jan|feb|mar|apr|may|jun|jul|aug)\s+\d{1}',                             '%b %d'),       # jan 3
+    ]
+    # @formatter:on
 
     sentence_str = ' '.join(sentence)
     sentence_str = sentence_str.lower()
 
-    matches = []
-    numerical_groups = numerical_date.match(sentence_str)
-    if numerical_groups:
-        for match in numerical_groups.groups():
-            # Change (-|.) to /
-            matches += [re.sub('[-.]', '/', sentence_str)]
+    # Remove Ordinals
+    ordinal_regex = re.compile('(?<=[0-9])(?:st|nd|rd|th)')
+    sentence_str = re.sub(ordinal_regex, '', sentence_str)
 
-    for match in matches:
-        for regex, pattern in regex_format_dict.items()
+    # Remove commas
+    sentence_str = sentence_str.replace(',', '')
 
+    for regex, pattern in date_formats:
+        for match in re.findall(regex, sentence_str):
+            date_tuple = strptime(match, pattern)
+            sentence_str = sentence_str.replace(match, get_date_string(date_tuple))
 
-
-
-
-
-    """
-
-    written_groups = written_date.match(sentence_str)
-    if written_groups:
-        for match in written_groups.groups():
-            # Change January to -> Jan
-            for full, abbreviation in [('january', 'jan'), ('february', 'feb'), ('march', 'mar'), ('april', 'apr'),
-                                   ('may', 'may'), ('june', 'jun'), ('july', 'jul'), ('august', 'aug'),
-                                   ('september', 'sep'), ('october', 'oct'), ('november', 'nov'), ('december', 'dec')]:
-                date = re.sub(full, abbreviation, match)
-
-            # Remove st, nd, rd, th
-            date = re.sub('(st|nd|rd|th)', '', date)
-
-
-    return sentence
-
-
-        # Change January to -> Jan
-        for full, abbreviation in [('january', 'jan'), ('february', 'feb'), ('march', 'mar'), ('april', 'apr'),
-                                   ('may', 'may'), ('june', 'jun'), ('july', 'jul'), ('august', 'aug'),
-                                   ('september', 'sep'), ('october', 'oct'), ('november', 'nov'), ('december', 'dec')]:
-            date = re.sub(full, abbreviation, match)
-
-        # Remove st, nd, rd, th
-        date = re.sub('(st|nd|rd|th)', '', date)
-        matches += (match, date)
-
-
-    return sentence
-    """
+    return sentence_str.split()
 
 
 def money(sentence):

@@ -1,5 +1,6 @@
 import re
-from time import strptime
+from datetime import datetime
+
 
 from numbers import number_string, fractions
 
@@ -104,7 +105,7 @@ def year(setence):
     pass
 
 
-def get_date_string(datetime):
+def get_date_string(date_info):
     month = {1: 'January',
              2: 'February',
              3: 'March',
@@ -118,22 +119,21 @@ def get_date_string(datetime):
              11: 'November',
              12: 'December'}
 
-    if datetime.tm_mday and datetime.tm_mon and datetime.tm_year:
-        day = number_string(str(datetime.tm_mon), ordinal=True)
-        year = str(datetime.tm_year)
+    if date_info.day and date_info.month and date_info.year != 1900:
+        day = number_string(str(date_info.month), ordinal=True)
+        year = str(date_info.year)
         year = number_string(year[:2]) + ' ' + number_string(year[2:])
-        return "{month} {day}, {year}".format(day=day, month=month[datetime.tm_mon], year=year)
-    elif datetime.tm_mday and datetime.tm_mon:
-        day = number_string(str(datetime.tm_mon), ordinal=True)
-        return "{month} {day}".format(day=day, month=month[datetime.tm_mon])
-    elif datetime.tm_mon and datetime.tm_year:
-        year = str(datetime.tm_year)
+        return "{month} {day}, {year}".format(day=day, month=month[date_info.month], year=year)
+    elif date_info.day and date_info.month:
+        day = number_string(str(date_info.month), ordinal=True)
+        return "{month} {day}".format(day=day, month=month[date_info.month])
+    elif date_info.month and date_info.year != 1900:
+        year = str(date_info.year)
         year = number_string(year[:2]) + ' ' + number_string(year[2:])
-        return "{month} {year}".format(year=year, month=month[datetime.tm_mon])
+        return "{month} {year}".format(year=year, month=month[date_info.month])
 
 
 def abbreviations(sentence):
-
     abbrev = {
         'jan.': 'January',
         'feb.': 'February',
@@ -143,6 +143,7 @@ def abbreviations(sentence):
         'jun.': 'June',
         'jul.': 'July',
         'aug.': 'August',
+        'sep.': 'September',
         'sept.': 'September',
         'oct.': 'October',
         'nov.': 'November',
@@ -151,14 +152,14 @@ def abbreviations(sentence):
         'u.s.': 'United States',
         'u.s.a.': 'United States of America',
         'u.k.': 'United Kingdom',
-        'mr.':'Mister',
-        'mrs.':'Miss',
-        'dr.':'Doctor',
-        'gov.':'Governor',
-        'sen.':'Senator',
-        'inc.':'incorporated',
-        'vs.':'verse',
-        'jr.':'junior',
+        'mr.': 'Mister',
+        'mrs.': 'Miss',
+        'dr.': 'Doctor',
+        'gov.': 'Governor',
+        'sen.': 'Senator',
+        'inc.': 'incorporated',
+        'vs.': 'verse',
+        'jr.': 'junior',
     }
 
     new_sentence = []
@@ -170,19 +171,15 @@ def abbreviations(sentence):
 
 
 def date(sentence):
+    month_names = '(?:january|february|march|april|may|june|july|august|september|october|november|december)'
 
-    # @formatter:off
     date_formats = [
-        ('\d{1,2}\/\d{1,2}\/\d{4}',                                                 '%m/%d/%Y'),    # mm/dd/yyyy
-        ('\d{1,2}\/\d{1,2}\/\d{2}',                                                 '%m/%d/%y'),    # mm/dd/yy
-        ('(?:january|february|march|april|may|june|july|august)\s+\d{1,2}\s+\d{4}', '%B %d %Y'),    # january 3 2015
-        ('(?:jan|feb|mar|apr|may|jun|jul|aug)\s+\d{1,2}\s+\d{4}',                   '%b %d %Y'),    # jan 3 2015
-        ('(?:january|february|march|april|may|june|july|august)\s+\d{4}',           '%B %Y'),       # january 1980
-        ('(?:jan|feb|mar|apr|may|jun|jul|aug)\s+\d{4}',                             '%b %Y'),       # jan 1980
-        ('(?:january|february|march|april|may|june|july|august)\s+\d{1}',           '%B %d'),       # january 3
-        ('(?:jan|feb|mar|apr|may|jun|jul|aug)\s+\d{1}',                             '%b %d'),       # jan 3
+        ('\d{1,2}\/\d{1,2}\/\d{4}', '%m/%d/%Y'),  # mm/dd/yyyy
+        ('\d{1,2}\/\d{1,2}\/\d{2}', '%m/%d/%y'),  # mm/dd/yy
+        ('{month_names}\s+\d{{1,2}}\s+\d{{4}}'.format(month_names=month_names), '%B %d %Y'),  # january 3 2015
+        ('{month_names}\s+\d{{4}}'.format(month_names=month_names), '%B %Y'),  # january 1980
+        ('{month_names}\s+\d{{1,2}}'.format(month_names=month_names), '%B %d'),  # january 3
     ]
-    # @formatter:on
 
     sentence_str = ' '.join(sentence)
     sentence_str = sentence_str.lower()
@@ -193,12 +190,10 @@ def date(sentence):
 
     # Remove commas
     sentence_str = sentence_str.replace(',', '')
-    sentence_str = sentence_str.replace('.', '/')
-    sentence_str = sentence_str.replace('-', '/')
 
     for regex, pattern in date_formats:
         for match in re.findall(regex, sentence_str):
-            date_tuple = strptime(match, pattern)
+            date_tuple = datetime.strptime(match, pattern)
             sentence_str = sentence_str.replace(match, get_date_string(date_tuple))
 
     return sentence_str.split()

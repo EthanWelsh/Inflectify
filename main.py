@@ -45,7 +45,7 @@ def main():
         if contains_money(sentence):
             sentence = money(Sentence(sentence))
         if contains_fraction(sentence):
-            sentence = fraction(sentence)
+            sentence = fraction(Sentence(sentence))
         if contains_percent(sentence):
             sentence = percent(sentence)
         # if contains_number(sentence):

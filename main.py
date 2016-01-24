@@ -34,74 +34,6 @@ class Sentence():
         return ' '.join(self.sentence)
 
 
-def main():
-    with open('hw1_samplein.txt', 'r') as sample_text:
-        sentences = [Sentence([word for word in line.split()]) for line in sample_text]
-
-    for sentence in sentences:
-
-        sentence = abbreviations(sentence)
-        sentence = date(sentence)
-
-        if contains_money(sentence):
-            sentence = money(Sentence(sentence))
-        if contains_fraction(sentence):
-            sentence = fraction(Sentence(sentence))
-        if contains_percent(sentence):
-            sentence = percent(sentence)
-
-        sentence = year(sentence)
-        if contains_number(sentence):
-            sentence = number(sentence)
-
-        print(' '.join(sentence))
-
-
-def contains_money(sentence):
-    money_regex = re.compile('[$]')
-    match_indexes = []
-
-    for index, word in enumerate(sentence):
-        if money_regex.match(word):
-            match_indexes += [index]
-
-    return match_indexes
-
-
-def contains_number(sentence):
-    number_regex = re.compile('^[0-9]+[.]*[0-9]*$')
-    match_indexes = []
-
-    for index, word in enumerate(sentence):
-        if number_regex.match(word):
-            match_indexes += [index]
-
-    return match_indexes
-
-
-def contains_fraction(sentence):
-    fraction_regex = re.compile('[\d]+\\\/[\d]+')
-    match_indexes = []
-
-    for index, word in enumerate(sentence):
-        if fraction_regex.match(word):
-            match_indexes += [index]
-
-    return match_indexes
-
-
-def contains_percent(sentence):
-    percent_regex = re.compile('%')
-
-    match_indexes = []
-
-    for index, word in enumerate(sentence):
-        if percent_regex.match(word):
-            match_indexes += [index]
-
-    return match_indexes
-
-
 def get_date_string(date_info):
     month = {1: 'January',
              2: 'February',
@@ -168,7 +100,7 @@ def abbreviations(sentence):
 
 
 def year(sentence):
-    year_regex = re.compile('^(1[5-9]\d\d)|(20\d\d)$')
+    year_regex = re.compile('^((1[5-9]\d\d)|(20\d\d))$')
 
     new_sentence = []
 
@@ -196,10 +128,6 @@ def date(sentence):
     sentence_str = ' '.join(sentence)
     sentence_str = sentence_str.lower()
 
-    # Remove Ordinals
-    ordinal_regex = re.compile('(?<=[0-9])(?:st|nd|rd|th)')
-    sentence_str = re.sub(ordinal_regex, '', sentence_str)
-
     # Remove commas
     sentence_str = sentence_str.replace(',', '')
 
@@ -211,11 +139,31 @@ def date(sentence):
     return sentence_str.split()
 
 
+def ordinal(sentence):
+    sentence_str = ' '.join(sentence)
+    sentence_str = sentence_str.lower()
+
+    ordinal_regex = re.compile('(\d+)(st|nd|rd|th)')
+
+    for number, ordinal_ending in ordinal_regex.findall(sentence_str):
+        sentence_str = sentence_str.replace(number+ordinal_ending, number_string(number, ordinal=True))
+
+    return sentence_str.split()
+
+
 def money(sentence):
-    indexes = contains_money(sentence)
 
-    for index in indexes:
+    money_regex = re.compile('[$]')
+    match_indexes = []
 
+    for index, word in enumerate(sentence):
+        if money_regex.match(word):
+            match_indexes += [index]
+
+    sentence = Sentence(sentence)
+
+    if match_indexes:
+        index = match_indexes[0]
         first = sentence.adjacent_word(index, offset=1)
         second = sentence.adjacent_word(index, offset=2)
 
@@ -226,14 +174,25 @@ def money(sentence):
             sentence.remove(index)
             sentence[index] = number_string(first, money=True)
 
-    return sentence
+    if len(match_indexes) > 1:
+        return money(str(sentence).split())
+
+    return str(sentence).split()
 
 
 def fraction(sentence):
-    indexes = contains_fraction(sentence)
+    fraction_regex = re.compile('[\d]+\\\/[\d]+')
+    match_indexes = []
+
+    for index, word in enumerate(sentence):
+        if fraction_regex.match(word):
+            match_indexes += [index]
+
     number_regex = re.compile('[\d]+')
 
-    for index in indexes:
+    sentence = Sentence(sentence)
+
+    for index in match_indexes:
         prev = sentence.adjacent_word(index, -1)
 
         if number_regex.match(prev):
@@ -247,21 +206,50 @@ def fraction(sentence):
 
 
 def percent(sentence):
-    indexes = contains_percent(sentence)
+    percent_regex = re.compile('%')
 
-    for index in indexes:
+    match_indexes = []
+
+    for index, word in enumerate(sentence):
+        if percent_regex.match(word):
+            match_indexes += [index]
+
+    for index in match_indexes:
         sentence[index] = 'Percent'
 
     return sentence
 
 
 def number(sentence):
-    indexes = contains_number(sentence)
+    number_regex = re.compile('^([0-9]+[.]*[0-9]*)$')
+    match_indexes = []
 
-    for index in indexes:
+    for index, word in enumerate(sentence):
+        if number_regex.match(word):
+            match_indexes += [index]
+
+    for index in match_indexes:
         sentence[index] = number_string(sentence[index])
 
     return sentence
+
+
+def main():
+    #with open('hw1_corpus.txt', 'r') as sample_text:
+    with open('hw1_samplein.txt', 'r') as sample_text:
+        sentences = [Sentence([word for word in line.split()]) for line in sample_text]
+
+    for sentence in sentences:
+        sentence = abbreviations(sentence)
+        sentence = ordinal(sentence)
+        sentence = date(sentence)
+        sentence = money(sentence)
+        sentence = fraction(sentence)
+        sentence = percent(sentence)
+        sentence = year(sentence)
+        sentence = number(sentence)
+
+        print(' '.join(sentence))
 
 
 if __name__ == '__main__':

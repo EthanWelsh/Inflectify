@@ -122,7 +122,8 @@ def date(sentence):
         ('\d{1,2}\/\d{1,2}\/\d{2}', '%m/%d/%y'),  # mm/dd/yy
         ('{month_names}\s+\d{{1,2}}\s+\d{{4}}'.format(month_names=month_names), '%B %d %Y'),  # january 3 2015
         ('{month_names}\s+\d{{4}}'.format(month_names=month_names), '%B %Y'),  # january 1980
-        ('{month_names}\s+\d{{1,2}}'.format(month_names=month_names), '%B %d'),  # january 3
+        ('{month_names}\s+[123]\d'.format(month_names=month_names), '%B %d'),  # january 30
+        ('{month_names}\s+[4-9]\d'.format(month_names=month_names), '%B %y'),  # january 79
     ]
 
     sentence_str = ' '.join(sentence)
@@ -133,6 +134,8 @@ def date(sentence):
 
     for regex, pattern in date_formats:
         for match in re.findall(regex, sentence_str):
+            print('@@@', match, pattern)
+
             date_tuple = datetime.strptime(match, pattern)
             sentence_str = sentence_str.replace(match, get_date_string(date_tuple))
 
@@ -192,7 +195,9 @@ def fraction(sentence):
 
     sentence = Sentence(sentence)
 
-    for index in match_indexes:
+    if match_indexes:
+
+        index = match_indexes[0]
         prev = sentence.adjacent_word(index, -1)
 
         if number_regex.match(prev):
@@ -201,6 +206,9 @@ def fraction(sentence):
 
         num, den = sentence[index].split('\/')
         sentence[index] = fractions(numerator=num, denominator=den)
+
+    if len(match_indexes) > 1:
+        return fraction(str(sentence).split())
 
     return sentence
 
@@ -234,12 +242,23 @@ def number(sentence):
     return sentence
 
 
+def clean(sentence):
+    sentence_str = ' '.join(sentence)
+    sentence_str = sentence_str.replace('-', ' ')
+    sentence_str = sentence_str.replace('$', ' $ ')
+
+
+    return sentence_str.split()
+
+
 def main():
-    #with open('hw1_corpus.txt', 'r') as sample_text:
-    with open('hw1_samplein.txt', 'r') as sample_text:
+    with open('hw1_corpus.txt', 'r') as sample_text:
+    #with open('hw1_samplein.txt', 'r') as sample_text:
         sentences = [Sentence([word for word in line.split()]) for line in sample_text]
 
     for sentence in sentences:
+
+        sentence = clean(sentence)
         sentence = abbreviations(sentence)
         sentence = ordinal(sentence)
         sentence = date(sentence)

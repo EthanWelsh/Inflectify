@@ -49,16 +49,14 @@ def get_date_string(date_info):
              12: 'December'}
 
     if date_info.day and date_info.month and date_info.year != 1900:
-        day = number_string(str(date_info.month), ordinal=True)
-        year = str(date_info.year)
-        year = number_string(year[:2]) + ' ' + number_string(year[2:])
+        day = number_string(str(date_info.day), ordinal=True)
+        year = year_string(date_info.year)
         return "{month} {day}, {year}".format(day=day, month=month[date_info.month], year=year)
     elif date_info.day and date_info.month:
-        day = number_string(str(date_info.month), ordinal=True)
+        day = number_string(str(date_info.day), ordinal=True)
         return "{month} {day}".format(day=day, month=month[date_info.month])
     elif date_info.month and date_info.year != 1900:
-        year = str(date_info.year)
-        year = number_string(year[:2]) + ' ' + number_string(year[2:])
+        year = year_string(date_info.year)
         return "{month} {year}".format(year=year, month=month[date_info.month])
 
 
@@ -99,6 +97,24 @@ def abbreviations(sentence):
     return new_sentence
 
 
+def year_string(numerical_year):
+    year_str = str(numerical_year)
+
+    start = year_str[:2]
+    ending = year_str[2:]
+
+    if re.match('\d\d00', year_str):
+        return number_string(start) + ' ' + 'hundred'
+    elif re.match('2000', year_str):
+        return 'Two Thousand'
+    elif re.match('200[1-9]', year_str):
+        return number_string(year_str[:3]+'0') + ' and ' + number_string(year_str[3])
+    elif re.match('\d\d0[1-9]', year_str):
+        return number_string(start) + ' oh ' + number_string(ending)
+    else:
+        return number_string(start) + ' ' + number_string(ending)
+
+
 def year(sentence):
     year_regex = re.compile('^((1[5-9]\d\d)|(20\d\d))$')
 
@@ -106,8 +122,7 @@ def year(sentence):
 
     for word in sentence:
         if year_regex.match(word):
-            year = number_string(word[:2]) + ' ' + number_string(word[2:])
-            new_sentence += [year]
+            new_sentence += [year_string(word)]
         else:
             new_sentence += [word]
 
@@ -134,8 +149,6 @@ def date(sentence):
 
     for regex, pattern in date_formats:
         for match in re.findall(regex, sentence_str):
-            print('@@@', match, pattern)
-
             date_tuple = datetime.strptime(match, pattern)
             sentence_str = sentence_str.replace(match, get_date_string(date_tuple))
 
@@ -246,7 +259,6 @@ def clean(sentence):
     sentence_str = ' '.join(sentence)
     sentence_str = sentence_str.replace('-', ' ')
     sentence_str = sentence_str.replace('$', ' $ ')
-
 
     return sentence_str.split()
 

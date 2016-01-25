@@ -263,9 +263,24 @@ def clean(sentence):
     return sentence_str.split()
 
 
+def time(sentence):
+    time_regex = re.compile('\d{1,2}:\d\d')
+    match_indexes = []
+
+    for index, word in enumerate(sentence):
+        if time_regex.match(word):
+            match_indexes += [index]
+
+    for index in match_indexes:
+        hours, minutes = sentence[index].split(':')
+        sentence[index] = number_string(hours) + ' ' + number_string(minutes)
+
+    return sentence
+
+
 def main():
-    with open('hw1_corpus.txt', 'r') as sample_text:
-    #with open('hw1_samplein.txt', 'r') as sample_text:
+    #with open('hw1_corpus.txt', 'r') as sample_text:
+    with open('hw1_samplein.txt', 'r') as sample_text:
         sentences = [Sentence([word for word in line.split()]) for line in sample_text]
 
     for sentence in sentences:
@@ -279,6 +294,7 @@ def main():
         sentence = percent(sentence)
         sentence = year(sentence)
         sentence = number(sentence)
+        sentence = time(sentence)
 
         print(' '.join(sentence))
 

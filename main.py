@@ -154,7 +154,8 @@ def date(sentence):
     match = re.search('({month_names})\s+(\d{{1,2}})\s+(\d{{4}})'.format(month_names=month_names), sentence_str)
     if match:
         month, day, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[month], day=day, year=year))
+        sentence_str = sentence_str.replace(match.group(),
+                                            get_date_string(month=month_number_dict[month], day=day, year=year))
 
     # january 1980
     match = re.search('({month_names})\s+(\d{{4}})'.format(month_names=month_names), sentence_str)
@@ -301,7 +302,7 @@ def time(sentence):
 
 def main():
     with open('hw1_corpus.txt', 'r') as sample_text:
-    #with open('hw1_samplein.txt', 'r') as sample_text:
+    # with open('hw1_samplein.txt', 'r') as sample_text:
         sentences = [Sentence([word for word in line.split()]) for line in sample_text]
 
     for sentence in sentences:

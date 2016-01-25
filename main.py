@@ -1,4 +1,7 @@
+#!/usr/bin/python3
+
 import re
+import sys
 
 from numbers import number_string, fractions
 
@@ -85,6 +88,7 @@ def abbreviations(sentence):
         'inc.': 'incorporated',
         'vs.': 'verse',
         'jr.': 'junior',
+        'EST': 'Eastern Standard Time'
     }
 
     new_sentence = []
@@ -117,6 +121,85 @@ def year_string(numerical_year):
         return number_string(start) + ' oh ' + number_string(ending)
     else:
         return number_string(start) + ' ' + number_string(ending)
+
+
+def roman_numeral(sentence):
+    numeral_regex = re.compile('^[MCDXLIV]+$', flags=re.IGNORECASE)
+
+    new_sentence = []
+    for word in sentence:
+        if numeral_regex.match(word):
+            numeral_string = numeral_regex.search(word).group()
+            new_sentence += [str(numeral_to_int(numeral_string.upper()))]
+        else:
+            new_sentence += [word]
+
+    return new_sentence
+
+
+def numeral_to_int(numeral_string):
+    numeral_map = (('M',  1000),
+                   ('CM', 900),
+                   ('D',  500),
+                   ('CD', 400),
+                   ('C',  100),
+                   ('XC', 90),
+                   ('L',  50),
+                   ('XL', 40),
+                   ('X',  10),
+                   ('IX', 9),
+                   ('V',  5),
+                   ('IV', 4),
+                   ('I',  1))
+
+    result = 0
+    index = 0
+    for numeral, integer in numeral_map:
+        while numeral_string[index:index+len(numeral)] == numeral:
+            result += integer
+            index += len(numeral)
+    return result
+
+
+def distance(sentence):
+    year_regex = re.compile('(\d+)\'(\d+)\"')
+
+    new_sentence = []
+
+    for word in sentence:
+        if year_regex.match(word):
+            feet, inches = year_regex.search(word).groups()
+
+            if int(feet) == 1:
+                new_sentence += ['One foot']
+            else:
+                new_sentence += [number_string(feet) + ' feet']
+
+            new_sentence += ['and']
+
+            if int(inches) == 1:
+                new_sentence += ['One inch']
+            else:
+                new_sentence += [number_string(inches) + ' inches ']
+        else:
+            new_sentence += [word]
+
+    return new_sentence
+
+
+def ratio(sentence):
+    year_regex = re.compile('^\d+:\d+$')
+
+    new_sentence = []
+
+    for word in sentence:
+        if year_regex.match(word):
+            first, second = word.split(':')
+            new_sentence += [number_string(first) + ' to ' + number_string(second)]
+        else:
+            new_sentence += [word]
+
+    return new_sentence
 
 
 def year(sentence):
@@ -301,8 +384,13 @@ def time(sentence):
 
 
 def main():
-    with open('hw1_corpus.txt', 'r') as sample_text:
-    # with open('hw1_samplein.txt', 'r') as sample_text:
+    if len(sys.argv) > 1:
+        file_name = sys.argv[1]
+    else:
+        print('Please enter a filename to Inflectify!')
+        return -1
+
+    with open(file_name, 'r') as sample_text:
         sentences = [Sentence([word for word in line.split()]) for line in sample_text]
 
     for sentence in sentences:
@@ -314,8 +402,11 @@ def main():
         sentence = fraction(sentence)
         sentence = percent(sentence)
         sentence = year(sentence)
+        sentence = roman_numeral(sentence)
         sentence = number(sentence)
         sentence = time(sentence)
+        sentence = ratio(sentence)
+        sentence = distance(sentence)
 
         print(' '.join(sentence))
 

@@ -3,12 +3,12 @@ import re
 from numbers import number_string, fractions
 
 
-class Sentence():
+class Sentence:
     def __init__(self, sentence):
         self.sentence = sentence
 
     def adjacent_word(self, index, offset=1):
-        if 0 < index + offset < len(self.sentence):
+        if 0 <= index + offset < len(self.sentence):
             return self.sentence[index + offset]
         else:
             return ''
@@ -219,22 +219,22 @@ def money(sentence):
 
 def fraction(sentence):
     fraction_regex = re.compile('[\d]+\\\/[\d]+')
+    number_regex = re.compile('\d+')
+
     match_indexes = []
 
     for index, word in enumerate(sentence):
         if fraction_regex.match(word):
             match_indexes += [index]
 
-    number_regex = re.compile('[\d]+')
-
     sentence = Sentence(sentence)
 
     if match_indexes:
 
         index = match_indexes[0]
-        prev = sentence.adjacent_word(index, -1)
+        prev_word = sentence.adjacent_word(index, -1)
 
-        if number_regex.match(prev):
+        if number_regex.match(prev_word):
             sentence.insert(index, -1, 'and')
             index += 1
 
@@ -300,8 +300,8 @@ def time(sentence):
 
 
 def main():
-    #with open('hw1_corpus.txt', 'r') as sample_text:
-    with open('hw1_samplein.txt', 'r') as sample_text:
+    with open('hw1_corpus.txt', 'r') as sample_text:
+    #with open('hw1_samplein.txt', 'r') as sample_text:
         sentences = [Sentence([word for word in line.split()]) for line in sample_text]
 
     for sentence in sentences:

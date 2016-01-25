@@ -107,10 +107,10 @@ def year_string(numerical_year):
     start = year_str[:2]
     ending = year_str[2:]
 
-    if re.match('\d\d00', year_str):
-        return number_string(start) + ' ' + 'hundred'
-    elif re.match('2000', year_str):
+    if re.match('2000', year_str):
         return 'Two Thousand'
+    elif re.match('\d\d00', year_str):
+        return number_string(start) + ' ' + 'hundred'
     elif re.match('200[1-9]', year_str):
         return number_string(year_str[:3] + '0') + ' and ' + number_string(year_str[3])
     elif re.match('\d\d0[1-9]', year_str):

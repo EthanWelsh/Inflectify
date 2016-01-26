@@ -61,46 +61,6 @@ def get_date_string(day=None, month=None, year=None):
         return "{month} {year}".format(year=year, month=month_dict[month])
 
 
-def abbreviations(sentence):
-    abbrev = {
-        'jan.': 'January',
-        'feb.': 'February',
-        'mar.': 'March',
-        'apr.': 'April',
-        'may.': 'May',
-        'jun.': 'June',
-        'jul.': 'July',
-        'aug.': 'August',
-        'sep.': 'September',
-        'sept.': 'September',
-        'oct.': 'October',
-        'nov.': 'November',
-        'dec.': 'December',
-        'etc...': 'etcetera',
-        'u.s.': 'United States',
-        'u.s.a.': 'United States of America',
-        'u.k.': 'United Kingdom',
-        'mr.': 'Mister',
-        'mrs.': 'Miss',
-        'dr.': 'Doctor',
-        'gov.': 'Governor',
-        'sen.': 'Senator',
-        'inc.': 'incorporated',
-        'vs.': 'verse',
-        'jr.': 'junior',
-        'EST': 'Eastern Standard Time'
-    }
-
-    new_sentence = []
-    for word in sentence:
-        if str.lower(word) in abbrev:
-            new_sentence += [abbrev.get(str.lower(word))]
-        else:
-            new_sentence += [word]
-
-    return new_sentence
-
-
 def year_string(numerical_year):
     year_str = str(numerical_year)
 
@@ -123,20 +83,6 @@ def year_string(numerical_year):
         return number_string(start) + ' oh ' + number_string(ending)
     else:
         return number_string(start) + ' ' + number_string(ending)
-
-
-def roman_numeral(sentence):
-    numeral_regex = re.compile('^[MCDXLIV]+$')
-
-    new_sentence = []
-    for word in sentence:
-        if numeral_regex.match(word):
-            numeral_string = numeral_regex.search(word).group()
-            new_sentence += [str(numeral_to_int(numeral_string.upper()))]
-        else:
-            new_sentence += [word]
-
-    return new_sentence
 
 
 def numeral_to_int(numeral_string):
@@ -163,233 +109,325 @@ def numeral_to_int(numeral_string):
     return result
 
 
+def abbreviations(sentence):
+
+    try:
+        abbrev = {
+            'jan.': 'January',
+            'feb.': 'February',
+            'mar.': 'March',
+            'apr.': 'April',
+            'may.': 'May',
+            'jun.': 'June',
+            'jul.': 'July',
+            'aug.': 'August',
+            'sep.': 'September',
+            'sept.': 'September',
+            'oct.': 'October',
+            'nov.': 'November',
+            'dec.': 'December',
+            'etc...': 'etcetera',
+            'u.s.': 'United States',
+            'u.s.a.': 'United States of America',
+            'u.k.': 'United Kingdom',
+            'mr.': 'Mister',
+            'mrs.': 'Miss',
+            'dr.': 'Doctor',
+            'gov.': 'Governor',
+            'sen.': 'Senator',
+            'inc.': 'incorporated',
+            'vs.': 'verse',
+            'jr.': 'junior',
+            'EST': 'Eastern Standard Time'
+        }
+
+        new_sentence = []
+        for word in sentence:
+            if str.lower(word) in abbrev:
+                new_sentence += [abbrev.get(str.lower(word))]
+            else:
+                new_sentence += [word]
+
+        return new_sentence
+    except:
+        return sentence
+
+def roman_numeral(sentence):
+    try:
+        numeral_regex = re.compile('^[MCDXLIV]+$')
+
+        new_sentence = []
+        for word in sentence:
+            if numeral_regex.match(word):
+                numeral_string = numeral_regex.search(word).group()
+                new_sentence += [str(numeral_to_int(numeral_string.upper()))]
+            else:
+                new_sentence += [word]
+
+        return new_sentence
+    except:
+        return sentence
+
+
 def distance(sentence):
-    year_regex = re.compile('(\d+)\'(\d+)\"')
+    try:
+        year_regex = re.compile('(\d+)\'(\d+)\"')
 
-    new_sentence = []
+        new_sentence = []
 
-    for word in sentence:
-        if year_regex.match(word):
-            feet, inches = year_regex.search(word).groups()
+        for word in sentence:
+            if year_regex.match(word):
+                feet, inches = year_regex.search(word).groups()
 
-            if int(feet) == 1:
-                new_sentence += ['One foot']
+                if int(feet) == 1:
+                    new_sentence += ['One foot']
+                else:
+                    new_sentence += [number_string(feet) + ' feet']
+
+                new_sentence += ['and']
+
+                if int(inches) == 1:
+                    new_sentence += ['One inch']
+                else:
+                    new_sentence += [number_string(inches) + ' inches ']
             else:
-                new_sentence += [number_string(feet) + ' feet']
+                new_sentence += [word]
 
-            new_sentence += ['and']
-
-            if int(inches) == 1:
-                new_sentence += ['One inch']
-            else:
-                new_sentence += [number_string(inches) + ' inches ']
-        else:
-            new_sentence += [word]
-
-    return new_sentence
+        return new_sentence
+    except:
+        return sentence
 
 
 def ratio(sentence):
-    year_regex = re.compile('^\d+:\d+$')
+    try:
+        year_regex = re.compile('^\d+:\d+$')
 
-    new_sentence = []
+        new_sentence = []
 
-    for word in sentence:
-        if year_regex.match(word):
-            first, second = word.split(':')
-            new_sentence += [number_string(first) + ' to ' + number_string(second)]
-        else:
-            new_sentence += [word]
+        for word in sentence:
+            if year_regex.match(word):
+                first, second = word.split(':')
+                new_sentence += [number_string(first) + ' to ' + number_string(second)]
+            else:
+                new_sentence += [word]
 
-    return new_sentence
+        return new_sentence
+    except:
+        return sentence
 
 
 def year(sentence):
-    year_regex = re.compile('^((1[5-9]\d\d)|(20\d\d))s?$')
+    try:
+        year_regex = re.compile('^((1[5-9]\d\d)|(20\d\d))s?$')
 
-    new_sentence = []
+        new_sentence = []
 
-    for word in sentence:
-        if year_regex.match(word):
-            if word[len(word) - 1] == 's':
-                if word[-3:-1] == '10':
-                    new_sentence += [year_string(word[:4]) + 's']
+        for word in sentence:
+            if year_regex.match(word):
+                if word[len(word) - 1] == 's':
+                    if word[-3:-1] == '10':
+                        new_sentence += [year_string(word[:4]) + 's']
+                    else:
+                        new_sentence += [year_string(word[:4])[:-1] + 'ies']
                 else:
-                    new_sentence += [year_string(word[:4])[:-1] + 'ies']
+                    new_sentence += [year_string(word)]
             else:
-                new_sentence += [year_string(word)]
-        else:
-            new_sentence += [word]
+                new_sentence += [word]
 
-    return new_sentence
+        return new_sentence
+    except:
+        return sentence
 
 
 def date(sentence):
-    month_number_dict = {'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6, 'july': 7,
-                         'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12}
-    month_names = '(?:january|february|march|april|may|june|july|august|september|october|november|december)'
+    try:
+        month_number_dict = {'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6, 'july': 7,
+                             'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12}
+        month_names = '(?:january|february|march|april|may|june|july|august|september|october|november|december)'
 
-    sentence_str = ' '.join(sentence)
+        sentence_str = ' '.join(sentence)
 
-    # Remove commas
-    sentence_str = sentence_str.replace(',', '')
+        # Remove commas
+        sentence_str = sentence_str.replace(',', '')
 
-    # 12/01/2016
-    match = re.search('(\d{1,2})\/(\d{1,2})\/(\d{2,4})', sentence_str, flags=re.IGNORECASE)
-    if match:
-        month, day, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=int(month), day=day, year=year))
+        # 12/01/2016
+        match = re.search('(\d{1,2})\/(\d{1,2})\/(\d{2,4})', sentence_str, flags=re.IGNORECASE)
+        if match:
+            month, day, year = match.groups()
+            sentence_str = sentence_str.replace(match.group(), get_date_string(month=int(month), day=day, year=year))
 
-    # january 1 2016
-    match = re.search('({month_names})\s+(\d{{1,2}})\s+(\d{{4}})'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
-    if match:
-        month, day, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(),
-                                            get_date_string(month=month_number_dict[str.lower(month)], day=day, year=year))
+        # january 1 2016
+        match = re.search('({month_names})\s+(\d{{1,2}})\s+(\d{{4}})'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
+        if match:
+            month, day, year = match.groups()
+            sentence_str = sentence_str.replace(match.group(),
+                                                get_date_string(month=month_number_dict[str.lower(month)], day=day, year=year))
 
-    # january 1980
-    match = re.search('({month_names})\s+(\d{{4}})'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
-    if match:
-        month, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], year=year))
+        # january 1980
+        match = re.search('({month_names})\s+(\d{{4}})'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
+        if match:
+            month, year = match.groups()
+            sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], year=year))
 
-    # january 25
-    match = re.search('({month_names})\s+([123]\d)'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
-    if match:
-        month, day = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], day=day))
+        # january 25
+        match = re.search('({month_names})\s+([123]\d)'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
+        if match:
+            month, day = match.groups()
+            sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], day=day))
 
-    # january 79
-    match = re.search('({month_names})\s+([4-9]\d)'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
-    if match:
-        month, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], year=year))
+        # january 79
+        match = re.search('({month_names})\s+([4-9]\d)'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
+        if match:
+            month, year = match.groups()
+            sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], year=year))
 
-    return sentence_str.split()
-
+        return sentence_str.split()
+    except:
+        return sentence
 
 def ordinal(sentence):
-    sentence_str = ' '.join(sentence)
+    try:
+        sentence_str = ' '.join(sentence)
 
-    ordinal_regex = re.compile('(\d+)(st|nd|rd|th)', flags=re.IGNORECASE)
+        ordinal_regex = re.compile('(\d+)(st|nd|rd|th)', flags=re.IGNORECASE)
 
-    for number, ordinal_ending in ordinal_regex.findall(sentence_str):
-        sentence_str = sentence_str.replace(number + ordinal_ending, number_string(number, ordinal=True))
+        for number, ordinal_ending in ordinal_regex.findall(sentence_str):
+            sentence_str = sentence_str.replace(number + ordinal_ending, number_string(number, ordinal=True))
 
-    return sentence_str.split()
+        return sentence_str.split()
+    except:
+        return sentence
 
 
 def money(sentence):
-    money_regex = re.compile('[$]')
-    match_indexes = []
+    try:
+        money_regex = re.compile('[$]')
+        match_indexes = []
 
-    for index, word in enumerate(sentence):
-        if money_regex.match(word):
-            match_indexes += [index]
+        for index, word in enumerate(sentence):
+            if money_regex.match(word):
+                match_indexes += [index]
 
-    sentence = Sentence(sentence)
+        sentence = Sentence(sentence)
 
-    if match_indexes:
-        index = match_indexes[0]
-        first = sentence.adjacent_word(index, offset=1)
-        second = sentence.adjacent_word(index, offset=2)
+        if match_indexes:
+            index = match_indexes[0]
+            first = sentence.adjacent_word(index, offset=1)
+            second = sentence.adjacent_word(index, offset=2)
 
-        if 'illion' in second:
-            sentence.insert(index, offset=2, word='Dollars')
-            sentence.remove(index)
-        elif '\/' in second:
-            sentence.insert(index, offset=3, word='Dollar')
-            sentence.remove(index)
-        else:
-            sentence.remove(index)
-            sentence[index] = number_string(first, money=True)
+            if 'illion' in second:
+                sentence.insert(index, offset=2, word='Dollars')
+                sentence.remove(index)
+            elif '\/' in second:
+                sentence.insert(index, offset=3, word='Dollar')
+                sentence.remove(index)
+            else:
+                sentence.remove(index)
+                sentence[index] = number_string(first, money=True)
 
-    if len(match_indexes) > 1:
-        return money(str(sentence).split())
+        if len(match_indexes) > 1:
+            return money(str(sentence).split())
 
-    return str(sentence).split()
+        return str(sentence).split()
+    except:
+        return sentence
 
 
 def fraction(sentence):
-    fraction_regex = re.compile('[\d]+\\\/[\d]+')
-    number_regex = re.compile('\d+')
+    try:
+        fraction_regex = re.compile('[\d]+\\\/[\d]+')
+        number_regex = re.compile('\d+')
 
-    match_indexes = []
+        match_indexes = []
 
-    for index, word in enumerate(sentence):
-        if fraction_regex.match(word):
-            match_indexes += [index]
+        for index, word in enumerate(sentence):
+            if fraction_regex.match(word):
+                match_indexes += [index]
 
-    sentence = Sentence(sentence)
+        sentence = Sentence(sentence)
 
-    if match_indexes:
+        if match_indexes:
 
-        index = match_indexes[0]
-        prev_word = sentence.adjacent_word(index, -1)
+            index = match_indexes[0]
+            prev_word = sentence.adjacent_word(index, -1)
 
-        if number_regex.match(prev_word):
-            sentence.insert(index, -1, 'and')
-            index += 1
+            if number_regex.match(prev_word):
+                sentence.insert(index, -1, 'and')
+                index += 1
 
-        num, den = sentence[index].split('\/')
-        sentence[index] = fractions(numerator=num, denominator=den)
+            num, den = sentence[index].split('\/')
+            sentence[index] = fractions(numerator=num, denominator=den)
 
-    if len(match_indexes) > 1:
-        return fraction(str(sentence).split())
+        if len(match_indexes) > 1:
+            return fraction(str(sentence).split())
 
-    return sentence
+        return sentence
+    except:
+        return sentence
 
 
 def percent(sentence):
-    percent_regex = re.compile('%')
+    try:
+        percent_regex = re.compile('%')
 
-    match_indexes = []
+        match_indexes = []
 
-    for index, word in enumerate(sentence):
-        if percent_regex.match(word):
-            match_indexes += [index]
+        for index, word in enumerate(sentence):
+            if percent_regex.match(word):
+                match_indexes += [index]
 
-    for index in match_indexes:
-        sentence[index] = 'Percent'
+        for index in match_indexes:
+            sentence[index] = 'Percent'
 
-    return sentence
+        return sentence
+    except:
+        return sentence
 
 
 def number(sentence):
-    number_regex = re.compile('^([0-9]+[.]*[0-9]*)$')
-    match_indexes = []
+    try:
+        number_regex = re.compile('^([0-9]+[.]*[0-9]*)$')
+        match_indexes = []
 
-    for index, word in enumerate(sentence):
-        if number_regex.match(word):
-            match_indexes += [index]
+        for index, word in enumerate(sentence):
+            if number_regex.match(word):
+                match_indexes += [index]
 
-    for index in match_indexes:
-        sentence[index] = number_string(sentence[index])
+        for index in match_indexes:
+            sentence[index] = number_string(sentence[index])
 
-    return sentence
+        return sentence
+    except:
+        return sentence
 
 
 def clean(sentence):
-    sentence_str = ' '.join(sentence)
-    sentence_str = sentence_str.replace('-', ' ')
-    sentence_str = sentence_str.replace('$', ' $ ')
+    try:
+        sentence_str = ' '.join(sentence)
+        sentence_str = sentence_str.replace('-', ' ')
+        sentence_str = sentence_str.replace('$', ' $ ')
 
-    return sentence_str.split()
+        return sentence_str.split()
+    except:
+        return sentence
 
 
 def time(sentence):
-    time_regex = re.compile('\d{1,2}:\d\d')
-    match_indexes = []
+    try:
+        time_regex = re.compile('\d{1,2}:\d\d')
+        match_indexes = []
 
-    for index, word in enumerate(sentence):
-        if time_regex.match(word):
-            match_indexes += [index]
+        for index, word in enumerate(sentence):
+            if time_regex.match(word):
+                match_indexes += [index]
 
-    for index in match_indexes:
-        hours, minutes = sentence[index].split(':')
-        sentence[index] = number_string(hours) + ' ' + number_string(minutes)
+        for index in match_indexes:
+            hours, minutes = sentence[index].split(':')
+            sentence[index] = number_string(hours) + ' ' + number_string(minutes)
 
-    return sentence
+        return sentence
+    except:
+        return sentence
 
 
 def main():

@@ -49,14 +49,14 @@ def get_date_string(day=None, month=None, year=None):
                   11: 'November',
                   12: 'December'}
 
-    if day and month_dict and year:
+    if day and month and year:
         day = number_string(str(day), ordinal=True)
         year = year_string(year)
         return "{month} {day}, {year}".format(day=day, month=month_dict[month], year=year)
-    elif day and month_dict:
+    elif day and month:
         day = number_string(str(day), ordinal=True)
         return "{month} {day}".format(day=day, month=month_dict[month])
-    elif month_dict and year:
+    elif month and year:
         year = year_string(year)
         return "{month} {year}".format(year=year, month=month_dict[month])
 
@@ -93,8 +93,10 @@ def abbreviations(sentence):
 
     new_sentence = []
     for word in sentence:
-        word = str.lower(word)
-        new_sentence += [abbrev.get(word, word)]
+        if str.lower(word) in abbrev:
+            new_sentence += [abbrev.get(str.lower(word))]
+        else:
+            new_sentence += [word]
 
     return new_sentence
 
@@ -124,7 +126,7 @@ def year_string(numerical_year):
 
 
 def roman_numeral(sentence):
-    numeral_regex = re.compile('^[MCDXLIV]+$', flags=re.IGNORECASE)
+    numeral_regex = re.compile('^[MCDXLIV]+$')
 
     new_sentence = []
     for word in sentence:
@@ -203,13 +205,19 @@ def ratio(sentence):
 
 
 def year(sentence):
-    year_regex = re.compile('^((1[5-9]\d\d)|(20\d\d))$')
+    year_regex = re.compile('^((1[5-9]\d\d)|(20\d\d))s?$')
 
     new_sentence = []
 
     for word in sentence:
         if year_regex.match(word):
-            new_sentence += [year_string(word)]
+            if word[len(word) - 1] == 's':
+                if word[-3:-1] == '10':
+                    new_sentence += [year_string(word[:4]) + 's']
+                else:
+                    new_sentence += [year_string(word[:4])[:-1] + 'ies']
+            else:
+                new_sentence += [year_string(word)]
         else:
             new_sentence += [word]
 
@@ -222,50 +230,48 @@ def date(sentence):
     month_names = '(?:january|february|march|april|may|june|july|august|september|october|november|december)'
 
     sentence_str = ' '.join(sentence)
-    sentence_str = sentence_str.lower()
 
     # Remove commas
     sentence_str = sentence_str.replace(',', '')
 
     # 12/01/2016
-    match = re.search('(\d{1,2})\/(\d{1,2})\/(\d{2,4})', sentence_str)
+    match = re.search('(\d{1,2})\/(\d{1,2})\/(\d{2,4})', sentence_str, flags=re.IGNORECASE)
     if match:
         month, day, year = match.groups()
         sentence_str = sentence_str.replace(match.group(), get_date_string(month=int(month), day=day, year=year))
 
     # january 1 2016
-    match = re.search('({month_names})\s+(\d{{1,2}})\s+(\d{{4}})'.format(month_names=month_names), sentence_str)
+    match = re.search('({month_names})\s+(\d{{1,2}})\s+(\d{{4}})'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
     if match:
         month, day, year = match.groups()
         sentence_str = sentence_str.replace(match.group(),
-                                            get_date_string(month=month_number_dict[month], day=day, year=year))
+                                            get_date_string(month=month_number_dict[str.lower(month)], day=day, year=year))
 
     # january 1980
-    match = re.search('({month_names})\s+(\d{{4}})'.format(month_names=month_names), sentence_str)
+    match = re.search('({month_names})\s+(\d{{4}})'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
     if match:
         month, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[month], year=year))
+        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], year=year))
 
     # january 25
-    match = re.search('({month_names})\s+([123]\d)'.format(month_names=month_names), sentence_str)
+    match = re.search('({month_names})\s+([123]\d)'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
     if match:
         month, day = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[month], day=day))
+        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], day=day))
 
     # january 79
-    match = re.search('({month_names})\s+([4-9]\d)'.format(month_names=month_names), sentence_str)
+    match = re.search('({month_names})\s+([4-9]\d)'.format(month_names=month_names), sentence_str, flags=re.IGNORECASE)
     if match:
         month, year = match.groups()
-        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[month], year=year))
+        sentence_str = sentence_str.replace(match.group(), get_date_string(month=month_number_dict[str.lower(month)], year=year))
 
     return sentence_str.split()
 
 
 def ordinal(sentence):
     sentence_str = ' '.join(sentence)
-    sentence_str = sentence_str.lower()
 
-    ordinal_regex = re.compile('(\d+)(st|nd|rd|th)')
+    ordinal_regex = re.compile('(\d+)(st|nd|rd|th)', flags=re.IGNORECASE)
 
     for number, ordinal_ending in ordinal_regex.findall(sentence_str):
         sentence_str = sentence_str.replace(number + ordinal_ending, number_string(number, ordinal=True))
@@ -290,6 +296,9 @@ def money(sentence):
 
         if 'illion' in second:
             sentence.insert(index, offset=2, word='Dollars')
+            sentence.remove(index)
+        elif '\/' in second:
+            sentence.insert(index, offset=3, word='Dollar')
             sentence.remove(index)
         else:
             sentence.remove(index)
